@@ -58,44 +58,45 @@ except:
     ppkfix = "No PPK Geotags"
     ppkall = "No PPK Geotags"
 
-# Download and parse outputs.json
+# Download the outputs.json file from AWS S3
 outputs_json = f'aws s3 --profile dh cp s3://skycatch-processing-jobs-405381464100/{PUUID}/outputs.json .'
 os.system(outputs_json)
 
+# Define the keywords and labels
+output_keywords = {
+    "pointcloud": "pointcloud",
+    "dsm": "DSM",
+    "dtm": "DTM",
+    "ortho": "orthophoto",
+    "mesh": "3D mesh",
+    "loc_sub": "subsampled outputs",  # Look for 'loc_sub'
+    "loc_removed": "removed objects",
+    "loc_ground": "ground return",  # Look for 'loc_ground'
+    "custom_basemap.skybasemap": "custom basemap",
+    "terrain_following.geotiff": "terrain following"
+}
+
 selected_outputs = []
+
 try:
+    # Read the outputs.json file downloaded from S3
     with open('outputs.json', 'r') as json_file:
         outputs = json.load(json_file)
 
-    # Generic keyword-based selection
-    if outputs.get("custom_basemap.skybasemap", 0):
-        selected_outputs.append("custom basemap")
+    # Loop through the keywords and check if files match and have a value of 1
+    for keyword, label in output_keywords.items():
 
-    if any("mesh" in key and outputs.get(key, 0) for key in outputs):
-        selected_outputs.append("3D mesh")
-
-    if any("dsm" in key and outputs.get(key, 0) for key in outputs):
-        selected_outputs.append("DSM")
-
-    if any("dtm" in key and outputs.get(key, 0) for key in outputs):
-        selected_outputs.append("DTM")
-
-    if any("ground" in key and outputs.get(key, 0) for key in outputs):
-        selected_outputs.append("ground return")
-
-    if any("removed" in key and outputs.get(key, 0) for key in outputs):
-        selected_outputs.append("removed objects")
-
-    if any("sub" in key and outputs.get(key, 0) for key in outputs):
-        selected_outputs.append("subsampled outputs")
-
-    if outputs.get("terrain_following.geotiff", 0):
-        selected_outputs.append("terrain following")
+        # For debugging, print out the matching file and value
+        for key, value in outputs.items():
+            if keyword in key:
+                if value == 1:
+                    if label not in selected_outputs:  # Prevent duplicates
+                        selected_outputs.append(label)
+                    break  # No need to keep checking once found
 
 except Exception as e:
-    print("Error retrieving outputs:", e)
+    print("Error retrieving or parsing outputs.json:", e)
     selected_outputs.append("Error retrieving outputs")
-
 
 try:
     sync = f'aws s3 --profile dh cp s3://skycatch-processing-jobs-405381464100/{PUUID}/project/backup/1_initial/report/project_report.pdf .'
