@@ -1,5 +1,5 @@
 # Auto_QA1_v2
-This is an updated version of Auto_QA1.
+This is an updated version of Auto_QA1. It shows the selected outputs byu the customer.
 We’ve developed a Python script that summarizes the PPK statistics and the Pix4D Quality Report, following the same approach as the original Auto_QA1. (https://github.com/bdmatabang/autoQA1/tree/main)
 <br>Please note that it requires AWS CLI credentials and access to the Skycatch buckets.
 
